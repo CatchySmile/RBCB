@@ -10,11 +10,16 @@
 #include <ctime>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#include <fstream>
+#include "json.hpp" // Include the nlohmann/json header
+
+using json = nlohmann::json;
 
 std::atomic<int> cells_processed(0);
 std::atomic<int> total_cycles(0);
 int data_size = 16;
+int num_threads = 16;
+int benchmark_duration = 10;
+bool use_gpu = false;
 
 // Function to write the benchmark log to a file
 void logBenchmark(const std::string& message) {
@@ -28,10 +33,45 @@ void logBenchmark(const std::string& message) {
     }
 }
 
+// Function to load configuration from a JSON file
+void loadConfiguration() {
+    std::ifstream config_file("config.json");
+    if (config_file.is_open()) {
+        json config;
+        config_file >> config;
+        data_size = config["data_size"].get<int>();
+        num_threads = config["num_threads"].get<int>();
+        benchmark_duration = config["benchmark_duration"].get<int>();
+        use_gpu = config["use_gpu"].get<bool>();
+        config_file.close();
+    }
+    else {
+        std::cerr << "Error opening configuration file!" << std::endl;
+    }
+}
+
+// Function to save configuration to a JSON file
+void saveConfiguration() {
+    json config;
+    config["data_size"] = data_size;
+    config["num_threads"] = num_threads;
+    config["benchmark_duration"] = benchmark_duration;
+    config["use_gpu"] = use_gpu;
+
+    std::ofstream config_file("config.json");
+    if (config_file.is_open()) {
+        config_file << config.dump(4); // Pretty print with 4 spaces
+        config_file.close();
+    }
+    else {
+        std::cerr << "Error opening configuration file!" << std::endl;
+    }
+}
+
 // Function executed by each thread in a cycle
 void processMatrixMultiplication(int thread_id, const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C) {
     int n = A.size();
-    for (int i = thread_id; i < n; i += 16) {
+    for (int i = thread_id; i < n; i += num_threads) {
         for (int j = 0; j < n; ++j) {
             C[i][j] = 0;
             for (int k = 0; k < n; ++k) {
@@ -137,7 +177,7 @@ void processCellGPU(const std::vector<std::vector<int>>& A, const std::vector<st
 // Function to process one cell (matrix multiplication) using CPU
 void processCell(const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C) {
     std::vector<std::thread> threads;
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < num_threads; ++i) {
         threads.emplace_back(processMatrixMultiplication, i, std::ref(A), std::ref(B), std::ref(C));
     }
     for (auto& thread : threads) {
@@ -188,7 +228,6 @@ void startBenchmark(bool useGPU) {
     std::vector<std::vector<int>> B(n, std::vector<int>(n, 1));
     std::vector<std::vector<int>> C(n, std::vector<int>(n, 0));
 
-    const int time_limit = 10;
     cells_processed.store(0);
     total_cycles.store(0);
 
@@ -205,7 +244,7 @@ void startBenchmark(bool useGPU) {
         auto current_time = std::chrono::high_resolution_clock::now();
         auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - start).count();
 
-        if (elapsed_time >= time_limit) {
+        if (elapsed_time >= benchmark_duration) {
             break;
         }
 
@@ -255,13 +294,13 @@ void startBenchmark(bool useGPU) {
     Sleep(8000);
 }
 
-
 // Display information about the program
 void showInfo() {
     std::cout << "This program benchmarks hardware performance.\n";
     std::cout << "Each 'cell' consists of matrix multiplication tasks.\n";
-    std::cout << "The goal is to measure how many cells can be processed in a 10-second period.\n";
+    std::cout << "The goal is to measure how many cells can be processed in time period.\n";
     std::cout << "Created to test multithreaded matrix multiplication and CPU/GPU throughput.\n";
+    std::cout << "In settings, bigger data size means longer time to compute.\n";
     std::cout << "=---=---=---> RBCB - Really Bad Cuda Benchmarking <---=---=---=\n";
     std::cout << "[!] Please report any errors and issues to https://github.com/CatchySmile/RBCB\n";
     Sleep(5000);
@@ -285,6 +324,39 @@ void changeDataSize() {
 
     data_size = rounded_size;
     std::cout << "Data size updated to " << data_size << " bytes.\n";
+    saveConfiguration();
+    Sleep(3000);
+}
+
+// Change the number of threads for benchmarking
+void changeNumThreads() {
+    int new_num_threads;
+    std::cout << "\nEnter the new number of threads: ";
+    std::cin >> new_num_threads;
+
+    if (new_num_threads < 1) {
+        new_num_threads = 1;
+    }
+
+    num_threads = new_num_threads;
+    std::cout << "Number of threads updated to " << num_threads << ".\n";
+    saveConfiguration();
+    Sleep(3000);
+}
+
+// Change the benchmark duration
+void changeBenchmarkDuration() {
+    int new_duration;
+    std::cout << "\nEnter the new benchmark duration (seconds): ";
+    std::cin >> new_duration;
+
+    if (new_duration < 1) {
+        new_duration = 1;
+    }
+
+    benchmark_duration = new_duration;
+    std::cout << "Benchmark duration updated to " << benchmark_duration << " seconds.\n";
+    saveConfiguration();
     Sleep(3000);
 }
 
@@ -301,10 +373,14 @@ void selectProcessor() {
     switch (choice) {
     case 1:
         std::cout << "CPU selected.\n";
+        use_gpu = false;
+        saveConfiguration();
         startBenchmark(false);
         break;
     case 2:
         std::cout << "GPU selected.\n";
+        use_gpu = true;
+        saveConfiguration();
         startBenchmark(true);
         break;
     case 0:
@@ -312,7 +388,7 @@ void selectProcessor() {
     default:
         std::cout << "Invalid choice. Please try again.\n";
     }
-    Sleep(3000);
+    Sleep(33000);
 }
 
 // Advanced options menu
@@ -320,9 +396,17 @@ void advancedOptions() {
     int choice;
     while (true) {
         system("cls");
+        // Display current settings
+        std::cout << "\n=-------=-------=-------=\n";
+        std::cout << "\n\033[1;32mCurrent Settings:\033[0m\n";
+        std::cout << "\033[1;32mData Size: " << data_size << " bytes\033[0m\n";
+        std::cout << "\033[1;Threads per cycle: " << num_threads << "\033[0m\n";
+        std::cout << "\033[1;32mBenchmark Duration: " << benchmark_duration << " seconds\033[0m\n";
+        std::cout << "\033[1;32mProcessor: " << (use_gpu ? "GPU" : "CPU") << "\033[0m\n";
         std::cout << "\n=-------=-------=-------=\n";
         std::cout << "[1] Change Data Size\n";
-        std::cout << "[2] Select Processor\n";
+        std::cout << "[2] Change Number of Threads\n";
+        std::cout << "[3] Change Benchmark Duration\n";
         std::cout << "[0] Back to Main Menu\n";
         std::cout << "=-------=-------=-------=\n";
         std::cout << "Enter your choice: ";
@@ -333,7 +417,10 @@ void advancedOptions() {
             changeDataSize();
             break;
         case 2:
-            selectProcessor();
+            changeNumThreads();
+            break;
+        case 3:
+            changeBenchmarkDuration();
             break;
         case 0:
             return;
@@ -342,8 +429,8 @@ void advancedOptions() {
         }
     }
 }
-
 int main() {
+    loadConfiguration();
     while (true) {
         system("cls");
         std::cout << R"(
@@ -374,6 +461,8 @@ int main() {
         int choice;
         std::cin >> choice;
 
+
+
         switch (choice) {
         case 1:
             selectProcessor();
@@ -390,6 +479,6 @@ int main() {
         default:
             std::cout << "Invalid choice. Please try again.\n";
         }
-        std::cout << "[!] Please report any errors and issues to https://github.com/CatchySmile/RBCB\n";
+
     }
 }
