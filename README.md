@@ -62,11 +62,21 @@ git clone https://github.com/CatchySmile/RBCB.git
 
 ### Cell
 
-A cell in RBCB represents a unit of work that consists of matrix multiplication tasks. Specifically, it involves multiplying two matrices and storing the result in a third matrix. The size of the matrices is determined by the `data_size` parameter.
+A cell in RBCB represents a unit of work that consists of matrix multiplication tasks. Specifically, it involves multiplying two matrices and storing the result in a third matrix. The size of the matrices is determined by the `data_size` parameter. Each cell is processed either by the CPU or GPU, depending on the selected mode.
 
 ### Cycle
 
-A cycle refers to the complete execution of the matrix multiplication tasks for a given cell. The program measures the number of cycles processed within a 10-second period to determine the performance of the CPU or GPU.
+A cycle refers to the complete execution of the matrix multiplication tasks for a given cell. The program measures the number of cycles processed within a 10-second period to determine the performance of the CPU or GPU. 
+
+### Threads
+
+Threads are used to parallelize the matrix multiplication tasks. When using the CPU, the program creates multiple threads (16 in this case) to divide the work among them. Each thread is responsible for processing a portion of the matrix multiplication tasks. This parallelization helps in utilizing the full potential of the CPU or GPU and speeds up the computation. Effectively, the more Cells & Cycles you can compute the stronger your hardware.
+
+When using the GPU, the program leverages CUDA to execute the matrix multiplication tasks in parallel on the GPU cores. The CUDA kernel is launched with a grid of threads, where each thread computes a single element of the resulting matrix.
+
+### Performance Evaluation
+
+The performance of the CPU or GPU is evaluated based on the number of cells processed within the 10-second period. The program calculates the total number of cycles (cells) processed and uses this information to grade the performance. The grading criteria are based on predefined thresholds for the number of cycles processed.
 
 ## Performance Grading
 
