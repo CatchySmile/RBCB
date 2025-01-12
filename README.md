@@ -1,2 +1,2 @@
 # RBCB
-RBCB | Really bad dua benchmarking. 
+RBCB | RBCB - really bad CUDA benchmarking
