@@ -1,6 +1,6 @@
-# RBCB - Really Bad Cuda Benchmarking
+# RBCB - really bad CUDA benchmarking
 
-Welcome to RBCB - Really Bad Cuda Benchmarking! This program is designed to benchmark multithreaded performance using both CPU and GPU. It performs matrix multiplication tasks and measures how many cells can be processed in a 10-second period.
+Welcome to RBCB - really bad CUDA benchmarking! This program is designed to benchmark multithreaded performance using both CPU and GPU. It performs matrix multiplication tasks and measures how many cells can be processed in a 10-second period.
 
 ## Table of Contents
 
@@ -84,17 +84,17 @@ The performance of the CPU and GPU is graded based on the total number of cycles
 
 ### CPU Grading
 
-- **SSS**: ≥ 20,000,000 cycles
-- **SS**: ≥ 10,000,000 cycles
-- **S**: ≥ 8,500,000 cycles
-- **A+**: ≥ 6,500,000 cycles
-- **A**: ≥ 5,000,000 cycles
-- **B+**: ≥ 4,000,000 cycles
-- **B**: ≥ 3,000,000 cycles
-- **C+**: ≥ 2,000,000 cycles
-- **C**: ≥ 1,300,000 cycles
-- **D+**: ≥ 1,100,000 cycles
-- **D**: ≥ 800,000 cycles
+- **SSS**: ≥ 25,000,000 cycles
+- **SS**: ≥ 15,000,000 cycles
+- **S**: ≥ 11,500,000 cycles
+- **A+**: ≥ 8,500,000 cycles
+- **A**: ≥ 6,000,000 cycles
+- **B+**: ≥ 4,500,000 cycles
+- **B**: ≥ 3,500,000 cycles
+- **C+**: ≥ 2,250,000 cycles
+- **C**: ≥ 1,500,000 cycles
+- **D+**: ≥ 1,300,000 cycles
+- **D**: ≥ 900,000 cycles
 - **D-**: ≥ 500,010 cycles
 - **F**: < 500,010 cycles
 
