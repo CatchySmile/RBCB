@@ -301,7 +301,7 @@ void startBenchmark(bool useGPU) {
 
 // Display information
 void showInfo() {
-    std::cout << "\n\n=---=---=---> RBCB - Really Bad CUDA Benchmarking <---=---=---=\n";
+    std::cout << "=---=---=---=---=---=---=---=---=---=---=---=---=---=---=---=---=\n";
     std::cout << "This program benchmarks hardware performance by performing matrix multiplication tasks.\n";
     std::cout << "It can utilize both CPU and GPU for benchmarking.\n";
     std::cout << "The benchmark measures how many matrix multiplication tasks (cells) can be processed in a given time period.\n";
@@ -309,7 +309,7 @@ void showInfo() {
     std::cout << "You can configure the data size, number of threads, and benchmark duration.\n";
     std::cout << "Results include metrics such as total cycles and cells processed, cycles and cells per second and FPS on our Graphics Test.\n";
     std::cout << "The program also provides a grade based on the performance of the CPU or GPU.\n";
-    std::cout << "=---=---=---> RBCB - Really Bad CUDA Benchmarking <---=---=---=\n";
+    std::cout << "\n\n=---=---=---> RBCB - Really Bad CUDA Benchmarking <---=---=---=\n";
     std::cout << "[!] Please report any errors and issues to https://github.com/CatchySmile/RBCB\n";
     Sleep(10000);
 }
@@ -450,13 +450,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 
 void runGraphicsTest(bool useGPU) {
-    // Define the CLASS_NAME identifier
     const wchar_t CLASS_NAME[] = L"GraphicsRenderingTestWindow";
 
-    // Define the start variable
     auto start = std::chrono::high_resolution_clock::now();
 
-    // Define the n variable
     int n = data_size;
 
     WNDCLASS wc = {};
@@ -598,11 +595,12 @@ void runGraphicsTest(bool useGPU) {
         std::string grade = gradeBenchmark2(total_cycles_processed);
         std::cout << "GPU Benchmark Grade: " << grade << std::endl;
         logBenchmark("GPU Benchmark Grade: " + grade);
-		Sleep(10000);
     }
+    Sleep(5000);
+    std::cout << "\nPress Enter to return to the main menu...";
+    std::cin.ignore();
+    std::cin.get();
 }
-
-
 
 void selectGraphicsProcessor() {
     int choice;
@@ -616,20 +614,36 @@ void selectGraphicsProcessor() {
     switch (choice) {
     case 1:
         std::cout << "CPU selected for Graphics Rendering Test.\n";
-        runGraphicsTest(false);
         break;
     case 2:
         std::cout << "GPU selected for Graphics Rendering Test.\n";
-        runGraphicsTest(true);
         break;
     case 0:
         return;
     default:
         std::cout << "Invalid choice. Please try again.\n";
+        Sleep(3000);
+        return;
     }
-    Sleep(3000);
-}
 
+    std::cout << "\n=-----=-----=-----=-----=\n";
+    std::cout << "Warning: This test contains flashing lights that may trigger seizures in individuals with photosensitive epilepsy.\nViewer discretion is advised.\n";
+    std::cout << "Seizure Prone users should not continue.\n";
+    std::cout << "=-----=-----=-----=-----=\n";
+    std::cout << "Do you want to continue?\n";
+    std::cout << "[1] Yes\n";
+    std::cout << "[0] No, return to main menu\n";
+    std::cout << "\nEnter your choice: ";
+    std::cin >> choice;
+
+    if (choice == 1) {
+        runGraphicsTest(choice == 2);
+    }
+    else {
+        std::cout << "Returning to main menu.\n";
+        Sleep(3000);
+    }
+}
 
 void startBenchmarkMenu() {
     int choice;
@@ -717,5 +731,3 @@ int main() {
         std::cout << "[!] Please report any errors and issues to https://github.com/CatchySmile/RBCB\n";
     }
 }
-
-
