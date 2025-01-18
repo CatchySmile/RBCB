@@ -1,6 +1,6 @@
-# RBCB - really bad CUDA benchmarking
+# RBCB - Really Bad CUDA Benchmarking
 
-Welcome to RBCB - really bad CUDA benchmarking! This program is designed to benchmark multithreaded performance using both CPU and GPU. It performs matrix multiplication tasks and measures how many cells can be processed in a 10-second period.
+Welcome to RBCB - Really Bad CUDA Benchmarking! This program is designed to benchmark multithreaded performance using both CPU and GPU. It performs matrix multiplication tasks and measures how many cells can be processed in a specified period.
 
 ## Table of Contents
 
@@ -12,7 +12,11 @@ Welcome to RBCB - really bad CUDA benchmarking! This program is designed to benc
 - [Concepts](#concepts)
   - [Cell](#cell)
   - [Cycle](#cycle)
+  - [Threads](#threads)
+  - [Performance Evaluation](#performance-evaluation)
 - [Performance Grading](#performance-grading)
+  - [CPU Grading](#cpu-grading)
+  - [GPU Grading](#gpu-grading)
 - [Reporting Issues](#reporting-issues)
 - [Contributing](#contributing)
 - [License](#license)
@@ -24,6 +28,7 @@ Welcome to RBCB - really bad CUDA benchmarking! This program is designed to benc
 - **CPU and GPU Support**: Allows you to select between CPU and GPU for benchmarking.
 - **Customizable Data Size**: Change the data size for benchmarking to suit your needs.
 - **Performance Grading**: Grades the performance based on the total cycles processed.
+- **Graphical Rendering Test**: Includes a graphical rendering test to measure FPS and other metrics.
 
 ## Getting Started
 
@@ -31,10 +36,11 @@ Welcome to RBCB - really bad CUDA benchmarking! This program is designed to benc
 
 - Windows OS
 - CUDA Toolkit installed
-- Visual Studio 2022 or later
+- Visual Studio 2021 or later
 
 ### Installation
-Download via releases or compile.
+
+Refer to releases for pre-compiled versions. To build from source:
 
 1. Clone the repository:
 ```
@@ -53,9 +59,9 @@ git clone https://github.com/CatchySmile/RBCB.git
 [3] Options [Advanced]
 ```
 3. Select an option:
-    - **Start Benchmark**: Choose between CPU and GPU for benchmarking.
+    - **Begin Benchmark**: Choose between CPU and GPU for benchmarking or run a graphical rendering test.
     - **Info**: Display information about the program.
-    - **Options [Advanced]**: Change data size or select the processor.
+    - **Options**: Change data size, number of threads, or benchmark duration.
     - **Quit**: Exit the program.
 
 ## Concepts
@@ -66,17 +72,17 @@ A cell in RBCB represents a unit of work that consists of matrix multiplication 
 
 ### Cycle
 
-A cycle refers to the complete execution of the matrix multiplication tasks for a given cell. The program measures the number of cycles processed within a 10-second period to determine the performance of the CPU or GPU. 
+A cycle refers to the complete execution of the matrix multiplication tasks for a given cell. The program measures the number of cycles processed within the specified period to determine the performance of the CPU or GPU.
 
 ### Threads
 
-Threads are used to parallelize the matrix multiplication tasks. When using the CPU, the program creates multiple threads (16 in this case) to divide the work among them. Each thread is responsible for processing a portion of the matrix multiplication tasks. This parallelization helps in utilizing the full potential of the CPU or GPU and speeds up the computation. Effectively, the more Cells & Cycles you can compute the stronger your hardware.
+Threads are used to parallelize the matrix multiplication tasks. When using the CPU, the program creates multiple threads to divide the work among them. Each thread is responsible for processing a portion of the matrix multiplication tasks. This parallelization helps in utilizing the full potential of the CPU or GPU and speeds up the computation.
 
 When using the GPU, the program leverages CUDA to execute the matrix multiplication tasks in parallel on the GPU cores. The CUDA kernel is launched with a grid of threads, where each thread computes a single element of the resulting matrix.
 
 ### Performance Evaluation
 
-The performance of the CPU or GPU is evaluated based on the number of cells processed within the 10-second period. The program calculates the total number of cycles (cells) processed and uses this information to grade the performance. The grading criteria are based on predefined thresholds for the number of cycles processed.
+The performance of the CPU or GPU is evaluated based on the number of cells processed within the specified period. The program calculates the total number of cycles (cells) processed and uses this information to grade the performance. The grading criteria are based on predefined thresholds for the number of cycles processed.
 
 ## Performance Grading
 
@@ -100,8 +106,8 @@ The performance of the CPU and GPU is graded based on the total number of cycles
 
 ### GPU Grading
 
-- **SSS**: ≥ 20,000,000 cycles
-- **SS**: ≥ 10,000,000 cycles
+- **SSS**: ≥ 25,000,000 cycles
+- **SS**: ≥ 13,000,000 cycles
 - **S**: ≥ 7,500,000 cycles
 - **A+**: ≥ 5,000,000 cycles
 - **A**: ≥ 4,000,000 cycles
