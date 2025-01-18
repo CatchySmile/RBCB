@@ -10,7 +10,7 @@
 #include <ctime>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-#include "json.hpp" // Include the nlohmann/json header
+#include "json.hpp"
 
 using json = nlohmann::json;
 
@@ -20,10 +20,11 @@ int data_size = 16;
 int num_threads = 16;
 int benchmark_duration = 10;
 bool use_gpu = false;
+std::string log_file_name = "benchmark_log.txt";
 
-// Function to write the benchmark log to a file
+// logging
 void logBenchmark(const std::string& message) {
-    std::ofstream log_file("benchmark_log.txt", std::ios_base::app);
+    std::ofstream log_file(log_file_name, std::ios_base::app);
     if (log_file.is_open()) {
         log_file << message << std::endl;
         log_file.close();
@@ -33,7 +34,7 @@ void logBenchmark(const std::string& message) {
     }
 }
 
-// Function to load configuration from a JSON file
+// load config
 void loadConfiguration() {
     std::ifstream config_file("config.json");
     if (config_file.is_open()) {
@@ -50,7 +51,7 @@ void loadConfiguration() {
     }
 }
 
-// Function to save configuration to a JSON file
+// save config
 void saveConfiguration() {
     json config;
     config["data_size"] = data_size;
@@ -68,7 +69,7 @@ void saveConfiguration() {
     }
 }
 
-// Function executed by each thread in a cycle
+// executed by each thread
 void processMatrixMultiplication(int thread_id, const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C) {
     int n = A.size();
     for (int i = thread_id; i < n; i += num_threads) {
@@ -81,7 +82,7 @@ void processMatrixMultiplication(int thread_id, const std::vector<std::vector<in
     }
 }
 
-// CUDA kernel for matrix multiplication
+// CUDA kernel
 __global__ void matrixMultiplicationKernel(int* A, int* B, int* C, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -94,7 +95,7 @@ __global__ void matrixMultiplicationKernel(int* A, int* B, int* C, int n) {
     }
 }
 
-// Function to process one cell (matrix multiplication) using GPU
+// process one cell (matrix multiplication) using GPU
 void processCellGPU(const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C) {
     int n = A.size();
     int size = n * n * sizeof(int);
@@ -102,7 +103,7 @@ void processCellGPU(const std::vector<std::vector<int>>& A, const std::vector<st
     int* d_A, * d_B, * d_C;
     cudaError_t err;
 
-    // Allocate memory on the GPU
+    // Allocate memory
     err = cudaMalloc((void**)&d_A, size);
     if (err != cudaSuccess) {
         std::cerr << "CUDA malloc failed for d_A: " << cudaGetErrorString(err) << std::endl;
@@ -174,7 +175,7 @@ void processCellGPU(const std::vector<std::vector<int>>& A, const std::vector<st
     total_cycles += n * n;
 }
 
-// Function to process one cell (matrix multiplication) using CPU
+// process one cell (matrix multiplication) using CPU
 void processCell(const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C) {
     std::vector<std::thread> threads;
     for (int i = 0; i < num_threads; ++i) {
@@ -202,13 +203,15 @@ std::string gradeBenchmark(int total_cycles_processed) {
     else if (total_cycles_processed >= 1300000) return "D+";
     else if (total_cycles_processed >= 900000) return "D";
     else if (total_cycles_processed >= 500010) return "D-";
+    else if (total_cycles_processed == 69420) return "Nice";
+    else if (total_cycles_processed >= 0) return "Zero!";
     else return "F";
 }
 
 // Grade the GPU based on total cycles
 std::string gradeBenchmark2(int total_cycles_processed) {
-    if (total_cycles_processed >= 20000000) return "SSS";
-    else if (total_cycles_processed >= 10000000) return "SS";
+    if (total_cycles_processed >= 25000000) return "SSS";
+    else if (total_cycles_processed >= 13000000) return "SS";
     else if (total_cycles_processed >= 7500000) return "S";
     else if (total_cycles_processed >= 5000000) return "A+";
     else if (total_cycles_processed >= 4000000) return "A";
@@ -219,6 +222,8 @@ std::string gradeBenchmark2(int total_cycles_processed) {
     else if (total_cycles_processed >= 11000000) return "D+";
     else if (total_cycles_processed >= 900000) return "D";
     else if (total_cycles_processed >= 600001) return "D-";
+    else if (total_cycles_processed == 69420) return "Nice";
+    else if (total_cycles_processed >= 0) return "Zero!";
     else return "F";
 }
 
@@ -291,22 +296,26 @@ void startBenchmark(bool useGPU) {
     std::cout << (useGPU ? "GPU" : "CPU") << " Benchmark Grade: " << grade << std::endl;
     logBenchmark((useGPU ? "GPU" : "CPU") + std::string(" Benchmark Grade: ") + grade);
 
-    Sleep(8000);
+    Sleep(10000);
 }
 
-// Display information about the program
+// Display information
 void showInfo() {
-    std::cout << "This program benchmarks hardware performance.\n";
-    std::cout << "Each 'cell' consists of matrix multiplication tasks.\n";
-    std::cout << "The goal is to measure how many cells can be processed in time period.\n";
-    std::cout << "Created to test multithreaded matrix multiplication and CPU/GPU throughput.\n";
-    std::cout << "In settings, bigger data size means longer time to compute.\n";
-    std::cout << "=---=---=---> RBCB - Really Bad Cuda Benchmarking <---=---=---=\n";
+    std::cout << "\n\n=---=---=---> RBCB - Really Bad CUDA Benchmarking <---=---=---=\n";
+    std::cout << "This program benchmarks hardware performance by performing matrix multiplication tasks.\n";
+    std::cout << "It can utilize both CPU and GPU for benchmarking.\n";
+    std::cout << "The benchmark measures how many matrix multiplication tasks (cells) can be processed in a given time period.\n";
+    std::cout << "The program supports multithreaded execution on the CPU and parallel execution on the GPU using CUDA.\n";
+    std::cout << "You can configure the data size, number of threads, and benchmark duration.\n";
+    std::cout << "Results include metrics such as total cycles and cells processed, cycles and cells per second and FPS on our Graphics Test.\n";
+    std::cout << "The program also provides a grade based on the performance of the CPU or GPU.\n";
+    std::cout << "=---=---=---> RBCB - Really Bad CUDA Benchmarking <---=---=---=\n";
     std::cout << "[!] Please report any errors and issues to https://github.com/CatchySmile/RBCB\n";
-    Sleep(5000);
+    Sleep(10000);
 }
 
-// Change the data size for benchmarking
+
+// Change the data size
 void changeDataSize() {
     float new_size;
     std::cout << "\nWarning: Proceed with caution, avoid using crazy numbers.\n";
@@ -328,7 +337,7 @@ void changeDataSize() {
     Sleep(3000);
 }
 
-// Change the number of threads for benchmarking
+// Change the number of threads
 void changeNumThreads() {
     int new_num_threads;
     std::cout << "\nEnter the new number of threads: ";
@@ -360,7 +369,7 @@ void changeBenchmarkDuration() {
     Sleep(3000);
 }
 
-// Select the processor (CPU or GPU) for benchmarking
+// Select the CPU or GPU for benchmarking
 void selectProcessor() {
     int choice;
     std::cout << "\nSelect Processor\n";
@@ -388,21 +397,21 @@ void selectProcessor() {
     default:
         std::cout << "Invalid choice. Please try again.\n";
     }
-    Sleep(33000);
+    Sleep(3000);
 }
 
-// Advanced options menu
+// Le options
 void advancedOptions() {
     int choice;
     while (true) {
         system("cls");
-        // Display current settings
         std::cout << "\n=-------=-------=-------=\n";
         std::cout << "\n\033[1;32mCurrent Settings:\033[0m\n";
         std::cout << "\033[1;32mData Size: " << data_size << " bytes\033[0m\n";
-        std::cout << "\033[1;Threads per cycle: " << num_threads << "\033[0m\n";
+        std::cout << "\033[1;32mThreads per cycle: " << num_threads << "\033[0m\n";
         std::cout << "\033[1;32mBenchmark Duration: " << benchmark_duration << " seconds\033[0m\n";
         std::cout << "\033[1;32mProcessor: " << (use_gpu ? "GPU" : "CPU") << "\033[0m\n";
+        std::cout << "\033[1;32mAutosave : On " << "\033[0m\n";
         std::cout << "\n=-------=-------=-------=\n";
         std::cout << "[1] Change Data Size\n";
         std::cout << "[2] Change Number of Threads\n";
@@ -429,6 +438,226 @@ void advancedOptions() {
         }
     }
 }
+
+// using Windows API because im too lazy to use anything else
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void runGraphicsTest(bool useGPU) {
+    // Define the CLASS_NAME identifier
+    const wchar_t CLASS_NAME[] = L"GraphicsRenderingTestWindow";
+
+    // Define the start variable
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Define the n variable
+    int n = data_size;
+
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = CLASS_NAME;
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(
+        0,
+        CLASS_NAME,
+        L"Graphics Rendering Test",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 480, 480,
+        NULL,
+        NULL,
+        GetModuleHandle(NULL),
+        NULL
+    );
+
+    if (hwnd == NULL) {
+        std::cerr << "CreateWindowEx failed!" << std::endl;
+        return;
+    }
+
+    // Set the window to full screen
+    SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_OVERLAPPEDWINDOW);
+    SetWindowPos(hwnd, HWND_TOP, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+
+    ShowWindow(hwnd, SW_SHOW);
+
+    std::vector<std::vector<int>> A(n, std::vector<int>(n, 1));
+    std::vector<std::vector<int>> B(n, std::vector<int>(n, 1));
+    std::vector<std::vector<int>> C(n, std::vector<int>(n, 0));
+
+    cells_processed.store(0);
+    total_cycles.store(0);
+
+    auto last_fps_time = start;
+    int frame_count = 0;
+    double fps = 0.0;
+
+    MSG msg = {};
+    bool running = true;
+    while (running) {
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            if (msg.message == WM_QUIT) {
+                running = false;
+            }
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        if (useGPU) {
+            processCellGPU(A, B, C);
+        }
+        else {
+            processCell(A, B, C);
+        }
+
+        // Change color every cell
+        int r = rand() % 256;
+        int g = rand() % 256;
+        int b = rand() % 256;
+        HBRUSH brush = CreateSolidBrush(RGB(r, g, b));
+        HDC hdc = GetDC(hwnd);
+        RECT rect;
+        GetClientRect(hwnd, &rect);
+        FillRect(hdc, &rect, brush);
+        DeleteObject(brush);
+
+        frame_count++;
+        auto current_time = std::chrono::high_resolution_clock::now();
+        if (std::chrono::duration_cast<std::chrono::seconds>(current_time - last_fps_time).count() >= 1) {
+            fps = frame_count;
+            frame_count = 0;
+            last_fps_time = current_time;
+        }
+
+        // Calculate metrics
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - start).count();
+        int total_cells = cells_processed.load();
+        double cells_per_second = static_cast<double>(total_cells) / (elapsed_time + 1); // +1 to avoid division by zero
+        int total_cycles_processed = total_cycles.load();
+        double cycles_per_second = cells_per_second * n * n;
+
+        // Display metrics
+        std::wstring metrics = L"FPS: " + std::to_wstring(fps) +
+            L"\nTotal Cycles: " + std::to_wstring(total_cycles_processed) +
+            L"\nCycles/sec: " + std::to_wstring(static_cast<int>(cycles_per_second)) +
+            L"\nTotal Cells: " + std::to_wstring(total_cells) +
+            L"\nCells/sec: " + std::to_wstring(static_cast<int>(cells_per_second));
+
+        SetBkColor(hdc, RGB(255, 255, 255));
+        SetTextColor(hdc, RGB(0, 0, 0));
+        DrawText(hdc, metrics.c_str(), -1, &rect, DT_LEFT | DT_TOP);
+
+        ReleaseDC(hwnd, hdc);
+
+        if (elapsed_time >= benchmark_duration) {
+            running = false;
+        }
+    }
+
+    // Calculate final metrics
+    auto end_time = std::chrono::high_resolution_clock::now();
+    int total_cells = cells_processed.load();
+    int total_seconds = std::chrono::duration_cast<std::chrono::seconds>(end_time - start).count();
+    double cells_per_second = static_cast<double>(total_cells) / total_seconds;
+    int total_cycles_processed = total_cycles.load();
+    double cycles_per_second = cells_per_second * n * n;
+
+    PostMessage(hwnd, WM_CLOSE, 0, 0);
+
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        if (msg.message == WM_QUIT) {
+            break;
+        }
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    std::cout << "\nGraphics Rendering Test completed.\n";
+    std::cout << "FPS: " << fps << "\n";
+    std::cout << "Cycles Processed per Second: " << static_cast<int>(cycles_per_second) << "\n";
+    std::cout << "Total Cycles Processed: " << total_cycles_processed << "\n";
+    std::cout << "Total Cells Processed: " << total_cells << "\n";
+    std::cout << "Cells Processed per Second (Average): " << static_cast<int>(cells_per_second) << "\n";
+
+    logBenchmark("Graphics Rendering Test completed.");
+    logBenchmark("FPS: " + std::to_string(fps));
+    logBenchmark("Cycles Processed per Second: " + std::to_string(static_cast<int>(cycles_per_second)));
+    logBenchmark("Total Cycles Processed: " + std::to_string(total_cycles_processed));
+    logBenchmark("Total Cells Processed: " + std::to_string(total_cells));
+    logBenchmark("Cells Processed per Second (Average): " + std::to_string(static_cast<int>(cells_per_second)));
+
+    if (useGPU) {
+        std::string grade = gradeBenchmark2(total_cycles_processed);
+        std::cout << "GPU Benchmark Grade: " << grade << std::endl;
+        logBenchmark("GPU Benchmark Grade: " + grade);
+		Sleep(10000);
+    }
+}
+
+
+
+void selectGraphicsProcessor() {
+    int choice;
+    std::cout << "\nSelect Processor for Graphics Rendering Test\n";
+    std::cout << "[1] CPU\n";
+    std::cout << "[2] GPU\n";
+    std::cout << "[0] Back\n";
+    std::cout << "Enter your choice: ";
+    std::cin >> choice;
+
+    switch (choice) {
+    case 1:
+        std::cout << "CPU selected for Graphics Rendering Test.\n";
+        runGraphicsTest(false);
+        break;
+    case 2:
+        std::cout << "GPU selected for Graphics Rendering Test.\n";
+        runGraphicsTest(true);
+        break;
+    case 0:
+        return;
+    default:
+        std::cout << "Invalid choice. Please try again.\n";
+    }
+    Sleep(3000);
+}
+
+
+void startBenchmarkMenu() {
+    int choice;
+    while (true) {
+        system("cls");
+        std::cout << "\n=-------=-------=-------=\n";
+        std::cout << "[1] Simple Benchmark\n";
+        std::cout << "[2] Graphical Rendering\n";
+        std::cout << "[0] Back to Main Menu\n";
+        std::cout << "=-------=-------=-------=\n";
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
+
+        switch (choice) {
+        case 1:
+            selectProcessor();
+            break;
+        case 2:
+            selectGraphicsProcessor();
+            break;
+        case 0:
+            return;
+        default:
+            std::cout << "Invalid choice. Please try again.\n";
+        }
+    }
+}
+
 int main() {
     loadConfiguration();
     while (true) {
@@ -451,9 +680,9 @@ int main() {
 )";
         std::cout << "\n=-------=-------=-------=\n";
         std::cout << "RBCB - really bad CUDA benchmarking\n";
-        std::cout << "[1] Start Benchmark\n";
+        std::cout << "[1] Begin Benchmark\n";
         std::cout << "[2] Info\n";
-        std::cout << "[3] Options [Advanced]\n";
+        std::cout << "[3] Options\n";
         std::cout << "[0] Quit\n";
         std::cout << "=-------=-------=-------=\n";
         std::cout << "Enter your choice: ";
@@ -461,11 +690,9 @@ int main() {
         int choice;
         std::cin >> choice;
 
-
-
         switch (choice) {
         case 1:
-            selectProcessor();
+            startBenchmarkMenu();
             break;
         case 2:
             showInfo();
@@ -480,5 +707,15 @@ int main() {
             std::cout << "Invalid choice. Please try again.\n";
         }
 
+        // Display current settings
+        std::cout << "\n\033[1;32mCurrent Settings:\033[0m\n";
+        std::cout << "\033[1;32mData Size: " << data_size << " bytes\033[0m\n";
+        std::cout << "\033[1;32mNumber of Threads: " << num_threads << "\033[0m\n";
+        std::cout << "\033[1;32mBenchmark Duration: " << benchmark_duration << " seconds\033[0m\n";
+        std::cout << "\033[1;32mProcessor: " << (use_gpu ? "GPU" : "CPU") << "\033[0m\n";
+        std::cout << "\033[1;32mAutosave : On " << "\033[0m\n";
+        std::cout << "[!] Please report any errors and issues to https://github.com/CatchySmile/RBCB\n";
     }
 }
+
+
