@@ -1,7 +1,7 @@
 # RBCB - Really Bad CUDA Benchmarking
 Warning: This application contains flashing lights that may trigger seizures in individuals with photosensitive epilepsy. Viewer discretion is advised.
 
-Welcome to RBCB - Really Bad CUDA Benchmarking! This program is designed to benchmark multithreaded performance using both CPU and GPU. It performs matrix multiplication tasks and measures how many cells can be processed in a specified period.
+Welcome to RBCB - Really Bad CUDA Benchmarking! This program is designed to benchmark multithreaded performance using both CPU and GPU. It performs matrix multiplication tasks and measures how many operations can be processed in a specified period.
 
 ## Table of Contents
 
